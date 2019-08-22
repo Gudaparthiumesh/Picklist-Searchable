@@ -1,0 +1,167 @@
+({
+    doInit : function(cmp, event, helper) {
+        var action = cmp.get("c.getallObjects");
+        action.setCallback(this, function(response) {
+            var state = response.getState();
+            var ObjectName=[];
+            if (state === "SUCCESS") {
+                var nst=response.getReturnValue();
+                for(var ns in nst){
+                    if(ns=='ObjectName'){
+                        for(var ts in nst[ns]){
+                            ObjectName.push(nst[ns][ts]);
+                        }
+                    }
+                }
+                cmp.set("v.ObjectType",ObjectName);
+                cmp.set("v.toShow",false);
+            }
+            else if (state === "INCOMPLETE") {
+                // do something
+            }
+        });
+        $A.enqueueAction(action);
+    },
+    getFields : function(cmp, event, helper) {
+        var getkey=cmp.find("pickedobjValue").get("v.value");
+        var action = cmp.get("c.getallFields");
+        action.setParams({"selectedObj":getkey});
+        action.setCallback(this, function(response) {
+            var state = response.getState();
+            //alert(state);
+            var FieldName=[];
+            if (state === "SUCCESS") {
+                var nst= response.getReturnValue();
+                for(var ns in nst)
+                {
+                    if(ns=='FieldName')
+                    {
+                        for(var ts in nst[ns])
+                        {
+                            FieldName.push(nst[ns][ts]);
+                        }
+                    }
+                }
+                if(FieldName.length == 0)
+                {
+                    var toastEvent = $A.get("e.force:showToast");
+                    toastEvent.setParams({
+                        title : 'Error',
+                        message:'No Picklist Fields Available in ' +getkey.toUpperCase() +' Object',
+                        duration:'1000',
+                        key: 'info_alt',
+                        type: 'error',
+                        mode: 'pester'
+                    });
+                    toastEvent.fire();
+                    cmp.set("v.toDisplay",false);
+                    cmp.set("v.toShowResults",false);
+                    cmp.set("v.toShow",false);
+                }
+                else
+                {
+                    cmp.set("v.FieldType",FieldName);
+                    cmp.set("v.toDisplay",true);
+                    cmp.set("v.toShow",false);
+                    cmp.set("v.toShowResults",false);
+                }
+            }
+            else if (state === "ERROR") {
+                cmp.set("v.toDisplay",false);
+                cmp.set("v.toShowResults",false);
+                cmp.set("v.toShow",false);
+            }
+        });
+        $A.enqueueAction(action);
+    },
+    
+    getResult: function(cmp,event, helper) {
+        var selectedFld = cmp.find('pickedFldValue').get('v.value');
+        //alert(selectedFld);
+        
+            cmp.set("v.toShowResults",false);
+            cmp.set("v.toShow",false);
+            cmp.set("v.toDisplayBtn",true);
+        
+    },
+    
+    getFinalResults: function(cmp,event, helper) {
+        var selectedObj = cmp.find('pickedobjValue').get('v.value');
+        var selectedFld = cmp.find('pickedFldValue').get('v.value');
+        //alert('in getFinalResults==>'+selectedFld);
+        var action=cmp.get("c.getPicklistvalues");
+        action.setParams({
+            'objKey':selectedObj,
+            'fieldKey': selectedFld
+        }); 
+        action.setCallback(this,function(response){
+            var state=response.getState();
+            //alert(state);
+            if(state=='SUCCESS') {
+                
+                var returnresult=response.getReturnValue();
+                //alert("From server: " + JSON.stringify(response.getReturnValue()));
+                cmp.set("v.picklistValues", response.getReturnValue());
+                cmp.set("v.selectedFld", selectedFld.toUpperCase());
+                cmp.set("v.selectedObj", selectedObj.toUpperCase());
+                cmp.set("v.picklistValuesLen", response.getReturnValue().length);
+                cmp.set("v.toShowResults",true);
+                cmp.set("v.spinner",true);
+            }
+        }); 
+        $A.enqueueAction(action);
+    },
+    searchFilter : function(cmp,event){
+        var getsearchFilterId=cmp.find('searchFilterId').get('v.value');
+        var selectedObj = cmp.find('pickedobjValue').get('v.value');
+        var selectedFld = cmp.find('pickedFldValue').get('v.value');
+        var action=cmp.get("c.filterdata");
+        action.setParams({
+            'objKey':selectedObj,
+            'fieldKey': selectedFld,
+            'searchkey':getsearchFilterId
+        });
+        action.setCallback(this,function(response){
+            var state=response.getState();
+            var picklistValuesSearched=[];
+            if(state=='SUCCESS') { 
+                var returnresult=response.getReturnValue();
+                for(var rr in returnresult){
+                    if(rr =='picklistValuesSearch')
+                    {
+                        for(var ts in returnresult[rr])
+                        {
+                            picklistValuesSearched.push(returnresult[rr][ts]);
+                        }
+                    }
+                }
+                if(picklistValuesSearched == '')
+                {
+                    var toastEvent = $A.get("e.force:showToast");
+                    toastEvent.setParams({
+                        title : 'Error',
+                        message:'Search not Found !!',
+                        duration:' 1000',
+                        key: 'info_alt',
+                        type: 'error',
+                        mode: 'pester'
+                    });
+                    toastEvent.fire();
+                    cmp.set("v.toShow",false);
+                }
+                else
+                {
+                    cmp.set("v.picklistValues",picklistValuesSearched);
+                    cmp.set("v.picklistValuesSearchedLen",picklistValuesSearched.length);
+                    cmp.set("v.toShow",true);
+                }
+                
+            }
+            else if (state === "INCOMPLETE") {
+                // do something
+            }
+        }); 
+        $A.enqueueAction(action);
+    },
+    
+})
