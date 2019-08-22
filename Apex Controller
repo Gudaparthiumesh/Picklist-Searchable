@@ -1,0 +1,73 @@
+public class picklistSearchAdvancedCtrl {
+    @Auraenabled
+    public static map<String,List<String>> getallObjects() 
+    {
+        Map <String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
+        map<String,List<String>> Mp=new map<String,List<String>>();
+        List<String> objNames = new List<String>();
+        List<String> entities = new List<String>(schemaMap.keySet());
+        entities.add('--None--');
+        entities.sort();
+        //system.debug('=====>entities '+entities);
+        for(String name : entities)
+        {
+            objNames.add(name);
+        }
+        // System.debug('===>objNames '+objNames);
+        Mp.put('ObjectName',objNames);
+        //System.debug('===>Mp '+Mp);
+        return Mp;
+    }
+    @Auraenabled
+    public static map<String,List<String>> getallFields(String selectedObj) 
+    {
+        map<String,List<String>> Mp=new map<String,List<String>>();
+        Map <String, Schema.SObjectType> schemaMap = Schema.getGlobalDescribe();
+        Map <String, Schema.SObjectField> FieldMap = schemaMap.get(selectedObj).getDescribe().fields.getMap();
+        
+        List<String> entities = new List<String>(FieldMap.keySet());
+        entities.sort();
+        List<String> FieldNames = new List<String>();
+        for(String name : entities)
+        {
+            Schema.DescribeFieldResult fieldLabel = FieldMap.get(name).getDescribe();
+            Schema.DisplayType fType = fieldLabel.getType();
+            string fieldType = String.ValueOf(fType);
+            if(fieldType== 'PICKLIST')
+            {
+                FieldNames.add(name);
+            }
+        }
+        Mp.put('FieldName',FieldNames);
+        System.debug('===>Mp '+Mp);
+        return Mp;
+    }
+    @AuraEnabled
+    public static List<String> getPicklistvalues(String objKey, String fieldKey){
+        List<String> optionlist = new List<String>();
+        Map<String,Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
+        Map<String, Schema.SObjectField> field_map = gd.get(objKey).getDescribe().fields.getMap(); 
+        List<Schema.PicklistEntry> picklistValues = field_map.get(fieldKey).getDescribe().getPickListValues();
+        for (Schema.PicklistEntry pv : picklistValues) {
+            optionlist.add(pv.getValue());
+        }
+        return optionlist;
+    }
+    @AuraEnabled
+    Public static Map<String,List<String>> filterdata(String objKey, String fieldKey , String searchkey){
+        Map<String,Schema.SObjectType> gd = Schema.getGlobalDescribe(); 
+        Map<String, Schema.SObjectField> field_map = gd.get(objKey).getDescribe().fields.getMap(); 
+        map<String,List<String>> Mp1=new map<String,List<String>>();
+        List<Schema.PicklistEntry> picklistValues = field_map.get(fieldKey).getDescribe().getPickListValues();
+        List<String> optionlist = new List<String>();             
+        for (Schema.PicklistEntry pv : picklistValues) 
+        {
+            if(string.valueOf(pv.getValue()).containsIgnoreCase(searchkey))
+            {
+                optionlist.add(string.valueOf(pv.getValue()));
+            }
+        }
+        Mp1.put('picklistValuesSearch',optionlist);
+        return Mp1;
+    }
+}
