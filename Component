@@ -1,0 +1,114 @@
+<aura:component implements="force:appHostable" controller="picklistSearchAdvancedCtrl" >
+    <aura:attribute name="ObjectType" type="List"/>
+    <aura:attribute name="FieldType" type="List"/>
+    <aura:attribute name="picklistValues" type="List"/>
+    <aura:attribute name="selectedFld" type="String"/>
+    <aura:attribute name="selectedObj" type="String"/>
+    <aura:attribute name="picklistValuesLen" type="Integer"/>
+    <aura:attribute name="picklistValuesSearched" type="String[]"/>
+    <aura:attribute name="picklistValuesSearchedLen" type="Integer"/>
+    <aura:attribute name="toDisplay" type="boolean" default="false"/>
+    <aura:attribute name="toShowResults" type="boolean" default="false"/>
+    <aura:attribute name="toShow" type="boolean" default="false"/>
+    <aura:attribute name="toDisplayBtn" type="boolean" default="false"/>
+    <aura:handler name="init" action="{!c.doInit}" value="{!this}"/>
+   
+    <div style="background-color: white;height:98%;border-radius:10px 10px 0px 0px;">
+        <div style="padding: 0.2%; background: rgb(64, 64, 64);border-radius:10px 10px 0px 0px;">
+            <div class="slds-p-around_small slds-text-heading_small slds-text-color_inverse" style="text-align:center">
+                Picklist Searchable Component (Advanced)
+            </div>
+        </div>
+        <div class="slds-grid slds-gutters" style="height:81%; "> 
+            <div class="slds-col">
+                <div style="height:78%;width:70%;">
+                    <div style="margin-top:5%;margin-left:50%;">
+                        <lightning:select label="Select an Object" onchange="{!c.getFields}" aura:id="pickedobjValue">
+                            <aura:iteration items="{!v.ObjectType}" var="obj">
+                                <option text="{!obj}">
+                                </option>
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    <div style="margin-top:30%;margin-left:50%;">
+                        <aura:if isTrue="{!v.toDisplay}">
+                            <lightning:select label="Select a Field"  aura:id="pickedFldValue" onchange="{!c.getResult}">
+                                <option value="None">--None--</option>
+                                <aura:iteration items="{!v.FieldType}" var="obj">
+                                    <option text="{!obj}" >
+                                    </option>
+                                </aura:iteration>
+                            </lightning:select>
+                            <aura:if isTrue="{!v.toDisplayBtn}">
+                                <div style="margin-top:25%;margin-left:18%;">
+                                    <lightning:button variant="success" label="Get Results" title="Success" onclick="{!c.getFinalResults}"/>
+                                </div>
+                            </aura:if>
+                        </aura:if>
+                    </div>
+                </div>
+            </div>
+            <div class="slds-col">
+                <aura:if isTrue="{!v.toShowResults}">
+                    <div style="margin-top:3%;margin-bottom:2%" class="slds-text-heading_medium">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered" role="grid" >
+                            <thead>
+                                <th>
+                                    <div class="slds-truncate" style="text-align:center;">Object Name</div>
+                                </th>
+                                <th>
+                                    <div class="slds-truncate" style="text-align:center;">Field Name</div>
+                                </th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td >
+                                        <div class="slds-truncate" style="text-align:center;color:blue"><b>{!v.selectedObj}</b></div>
+                                        
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" style="text-align:center;color:blue"><b>{!v.selectedFld} </b></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="keyupclass">
+                        <ui:inputText class="slds-input keyupclass" updateOn="keyup" 
+                                      aura:id="searchFilterId" keyup="{!c.searchFilter}" placeholder="Search Field Values ...." />
+                    </div>
+                    <div style="height:63%;overflow:auto">
+                        <aura:iteration items="{!v.picklistValues}" var="pv">
+                            <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered SLDSBOX" role="grid" >
+                                <tr>
+                                    <td >
+                                        {!pv}
+                                    </td>
+                                </tr>
+                            </table>
+                        </aura:iteration>
+                    </div>
+                </aura:if>
+                <div style="margin-top:4%;color:red;text-align:center;font-size: 15px;">
+                    <aura:if isTrue="{!v.toShow}" >
+                        <b>Showing {!v.picklistValuesSearchedLen} of {!v.picklistValuesLen}
+                        </b>
+                    </aura:if>
+                </div>
+            </div>
+            <div class="slds-col">
+                <!-- <div style="margin-top:55%;margin-left:50%;">
+                    <a aura:id="forreviewId" onclick="{!c.Clearoptions}">
+                        <lightning:icon iconName="action:close"
+                                        size="medium"
+                                        title="Clear"
+                                        alternativeText="Clear Selection"
+                                        variant="success"/>
+                    </a>
+                </div>-->
+            </div>
+        </div>
+        <div style="padding: 2.0%; background: rgb(64, 64, 64);border-radius:0px 0px 10px 10px;">
+        </div>
+    </div>
+</aura:component>
