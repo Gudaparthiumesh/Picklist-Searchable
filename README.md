@@ -1,4 +1,4 @@
-# Picklist-Searchable
+# Picklist-Searchable - ADVANCED
 Custom Lightning Component
 
 .cmp relates to Lightning Component;
